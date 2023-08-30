@@ -17,8 +17,8 @@ public func configure(_ app: Application) async throws {
         tls: .prefer(try .init(configuration: .clientDefault)))
     ), as: .psql)
 
-    app.migrations.add(CreateTodo())
-
+    app.migrations.add(CreateSongs())
+    try await app.autoMigrate().get()
     // register routes
     try routes(app)
 }
