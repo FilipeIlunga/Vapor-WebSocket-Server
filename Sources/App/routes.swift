@@ -4,8 +4,11 @@ import Vapor
 let room = Room()
 let gameRoom = Room()
 let semaphore = DispatchSemaphore(value: 1)
+
 func routes(_ app: Application) throws {
+    
     app.webSocket("toki") { request, ws in
+        
         ws.onText { ws, text in
             let messageSplited = text.components(separatedBy: "|")
             
@@ -21,7 +24,7 @@ func routes(_ app: Application) throws {
     }
     
     app.webSocket("spriteKitGame") { request, ws in
-        ws.onText { ws, text in
+                ws.onText { ws, text in
            
             let messageSlipted = text.components(separatedBy: "|")
             
@@ -30,9 +33,11 @@ func routes(_ app: Application) throws {
             }
             
             let userName = messageSlipted[0]
+            
             semaphore.wait()
             gameRoom.connections[userName] = ws
             semaphore.signal()
+            
             gameRoom.sendCoordinates(userName: userName, payload: text)
             print("Message received: \(text)")
         }
@@ -72,13 +77,6 @@ class Room {
             ws.send(payload)
         }
         
-    }
-    
-    
-    deinit {
-        for (user, websocket) in connections {
-          //  websocket.close()
-        }
     }
 }
 
