@@ -9,8 +9,10 @@ func routes(_ app: Application) throws {
     
     app.webSocket("toki") { request, ws in
         
+        
         ws.onText { ws, text in
             let messageSplited = text.components(separatedBy: "|")
+            
             
             guard let userName = messageSplited.first else {
                 return
@@ -21,6 +23,7 @@ func routes(_ app: Application) throws {
             room.connections[userName] = ws
             room.send(userName: userName, newMessage: messageToSend)
         }
+        
     }
     
     app.webSocket("spriteKitGame") { request, ws in
@@ -28,7 +31,7 @@ func routes(_ app: Application) throws {
            
             let messageSlipted = text.components(separatedBy: "|")
             
-            guard messageSlipted.count > 3 else {
+            guard messageSlipted.count > 4 else {
                 return
             }
             
