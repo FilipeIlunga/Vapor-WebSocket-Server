@@ -46,18 +46,6 @@ func routes(_ app: Application) throws {
         }
     }
     
-    try app.register(collection: SongController())
-}
-
-struct User: Codable {
-    let userName: String
-    let message: String
-}
-
-struct Message: Codable {
-    let userName: String
-    let message: String
-    
 }
 
 class Room {
