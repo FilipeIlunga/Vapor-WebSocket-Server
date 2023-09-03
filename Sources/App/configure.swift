@@ -24,7 +24,5 @@ public func configure(_ app: Application) async throws {
     let chatController = ChatController()
     
     try chatController.handleWebSocket(app)
-    
-    
-   // try routes(app)
+    try routes(app)
 }

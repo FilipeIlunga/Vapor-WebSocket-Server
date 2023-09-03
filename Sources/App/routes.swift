@@ -7,24 +7,6 @@ let semaphore = DispatchSemaphore(value: 1)
 
 func routes(_ app: Application) throws {
     
-    app.webSocket("toki") { request, ws in
-        
-        
-        ws.onText { ws, text in
-            let messageSplited = text.components(separatedBy: "|")
-            
-            
-            guard let userName = messageSplited.first else {
-                return
-            }
-            
-            let messageToSend = messageSplited[1] + "|" + messageSplited[2]
-            print(messageToSend)
-            room.connections[userName] = ws
-            room.send(userName: userName, newMessage: messageToSend)
-        }
-        
-    }
     
     app.webSocket("spriteKitGame") { request, ws in
                 ws.onText { ws, text in
