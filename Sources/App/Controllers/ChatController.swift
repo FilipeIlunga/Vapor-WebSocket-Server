@@ -99,7 +99,6 @@ class ChatController {
     
     private func handlerChatMessage(type: ChatMessageType, message: String) {
         switch type {
-            
         case .ContentString:
             handlerChatContentStringMessage(message: message)
         case .ContentData:
@@ -109,21 +108,50 @@ class ChatController {
         case .Reply:
             print("reply")
         case .TypingStatus:
-            print("typing")
+            handlerTypingStatus(message: message)
         }
     }
     
-    private func handlerChatContentStringMessage(message: String) {
+    private func handlerTypingStatus(message: String) {
         let messageSplited = message.components(separatedBy: "|")
-        
-        guard messageSplited.count >= 3 else {
-            print("Message not enough fields - Expected fiedls: \(3) but received: \(messageSplited.count) - message: \(message)")
+
+        guard messageSplited.count >= 2 else {
             return
         }
         
+        let userID = messageSplited[0]
+        
+        //isTyping
+        let _ = messageSplited[1]
+        let header = WSMessageHeader(messageType: .Chat, subMessageType: ChatMessageType.TypingStatus)
+        
+        let socketMsg = "\(header.wsEncode)\(message)"
+        sendMessage(fromUser: userID, message: socketMsg)
+        
+    }
+    
+    private func handlerChatContentStringMessage(message: String) {
+        
+        do {
+             let wsMessage = try decodeChatContentStringMessage(message: message)
+            sendMessage(message: wsMessage, payload: message)
+
+        } catch {
+            print("Error on \(#function): \(error.localizedDescription)")
+        }
+    }
+    
+    func decodeChatContentStringMessage(message: String) throws -> WSMessage {
+        let messageSplited = message.components(separatedBy: "|")
+        
+        guard messageSplited.count >= 3 else {
+           let errorDescription = "Message not enough fields - Expected fiedls: \(3) but received: \(messageSplited.count) - message: \(message)"
+            throw NSError(domain: errorDescription, code: 0)
+        }
+        
         guard let timeInterval = Double(messageSplited[1]) else {
-            print("Erro ao converter timestamp: \(messageSplited[1])")
-            return
+            let errorDescription = "Erro ao converter timestamp: \(messageSplited[1])"
+            throw NSError(domain: errorDescription, code: 0)
         }
         
         let sendID = messageSplited[0]
@@ -131,7 +159,7 @@ class ChatController {
         let content = messageSplited[2]
         
         let wsMessage = WSMessage(senderID: sendID, timestamp: timestamp, content: content)
-        sendMessage(message: wsMessage, payload: message)
+        return wsMessage
     }
     
     private func userHasPendingMessage(userID: String) -> Bool{
@@ -151,6 +179,15 @@ class ChatController {
             }
             
             ws.send(socketMsg)
+        }
+    }
+    
+    func sendMessage(fromUser: String, message: String) {
+        for (userID, ws) in connections {
+            guard userID != fromUser else {
+                continue
+            }
+            ws.send(message)
         }
     }
     
