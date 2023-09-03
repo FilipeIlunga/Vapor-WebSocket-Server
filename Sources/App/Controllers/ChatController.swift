@@ -170,16 +170,17 @@ extension ChatController {
             throw NSError(domain: errorDescription, code: 0)
         }
         
-        guard let timeInterval = Double(messageSplited[1]) else {
+        guard let timeInterval = Double(messageSplited[2]) else {
             let errorDescription = "Erro ao converter timestamp: \(messageSplited[1])"
             throw NSError(domain: errorDescription, code: 0)
         }
         
-        let sendID = messageSplited[0]
+        let messageID = messageSplited[0]
+        let sendID = messageSplited[1]
         let timestamp = Date(timeIntervalSince1970: timeInterval)
-        let content = messageSplited[2]
+        let content = messageSplited[3]
         
-        let wsMessage = WSMessage(senderID: sendID, timestamp: timestamp, content: content)
+        let wsMessage = WSMessage(messageID: messageID, senderID: sendID, timestamp: timestamp, content: content)
         return wsMessage
     }
     
