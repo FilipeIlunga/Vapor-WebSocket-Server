@@ -165,7 +165,7 @@ extension ChatController {
     func decodeChatContentStringMessage(message: String) throws -> WSMessage {
         let messageSplited = message.components(separatedBy: "|")
         
-        guard messageSplited.count >= 3 else {
+        guard messageSplited.count >= 4 else {
            let errorDescription = "Message not enough fields - Expected fiedls: \(3) but received: \(messageSplited.count) - message: \(message)"
             throw NSError(domain: errorDescription, code: 0)
         }
