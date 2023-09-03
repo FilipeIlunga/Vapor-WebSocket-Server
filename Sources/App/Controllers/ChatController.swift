@@ -21,47 +21,43 @@ class ChatController {
         app.webSocket("chatWS") { request, ws in
             ws.onText { ws, text in
                 self.handlerWebsocketMessage(message: text, ws: ws)
-            
-//                let message = WSMessage(senderID: userID, messageType: messageType, timestamp: timestamp, content: messageContent)
- 
-//                if self.userHasPendingMessage(userID: userID) {
-//                    for pendingMessage in self.pendingMessages {
-//                        guard pendingMessage.userID == userID else { continue }
-//                        self.sendMessage(message: pendingMessage.message)
-//                        self.pendingMessages.remove(pendingMessage)
-//                    }
-//                } else {
-//                    self.sendMessage(message: message)
-//                }
             }
         }
     }
     
     private func handlerWebsocketMessage(message: String, ws: WebSocket) {
-        
         do {
             let messageReceived = try decodeWebsocketMessage(message: message)
-            
+
             switch messageReceived.messageType {
             case .Chat:
-                guard let chatMessageType = ChatMessageType(rawValue: messageReceived.subMessageTypeCode) else {
-                    return
-                }
-                handlerChatMessage(type: chatMessageType, message: messageReceived.payload)
+                handleChatMessageReceived(messageReceived: messageReceived)
             case .Status:
-                
-                guard let statusMessageType = StatusMessageType(rawValue: messageReceived.subMessageTypeCode) else {
-                    print("Invalid status code: \(messageReceived.subMessageTypeCode)")
-                          return
-                }
-                handlerStatusMessage(message: messageReceived.payload, type: statusMessageType, ws: ws)
+                handleStatusMessagReceivede(messageReceived: messageReceived, ws: ws)
             }
-            
+
         } catch {
             print("Error on \(error.localizedDescription)")
         }
-
     }
+    
+    private func handleChatMessageReceived(messageReceived: WSMessageReceived) {
+        guard let chatMessageType = ChatMessageType(rawValue: messageReceived.subMessageTypeCode) else {
+            print("Invalid chatMesage code: \(messageReceived.subMessageTypeCode)")
+
+            return
+        }
+        handlerChatMessage(type: chatMessageType, message: messageReceived.payload)
+    }
+
+    private func handleStatusMessagReceivede(messageReceived: WSMessageReceived, ws: WebSocket) {
+        guard let statusMessageType = StatusMessageType(rawValue: messageReceived.subMessageTypeCode) else {
+            print("Invalid status code: \(messageReceived.subMessageTypeCode)")
+            return
+        }
+        handlerStatusMessage(message: messageReceived.payload, type: statusMessageType, ws: ws)
+    }
+  
     
     private func handlerStatusMessage(message: String, type: StatusMessageType, ws: WebSocket) {
         switch type {
