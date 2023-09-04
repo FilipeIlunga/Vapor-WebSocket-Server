@@ -128,7 +128,7 @@ class ChatController {
         return pendingMessages.map {$0.userID}.contains(userID)
     }
     
-    func sendMessage(message: WSMessage, payload: String) {
+    func sendMessage(message: WSChatMessage, payload: String) {
         
         let header = WSMessageHeader(messageType: .Chat, subMessageType: ChatMessageType.ContentString)
         let socketMsg = "\(header.wsEncode)\(payload)"
@@ -154,7 +154,7 @@ class ChatController {
     }
     
     
-    func addPendingMessage(_ message: WSMessage, to userID: String) {
+    func addPendingMessage(_ message: WSChatMessage, to userID: String) {
         let pendingMessage = PendingMessage(message: message, userID: userID)
         pendingMessages.insert(pendingMessage)
     }
@@ -162,7 +162,7 @@ class ChatController {
 
 
 extension ChatController {
-    func decodeChatContentStringMessage(message: String) throws -> WSMessage {
+    func decodeChatContentStringMessage(message: String) throws -> WSChatMessage {
         let messageSplited = message.components(separatedBy: "|")
         
         guard messageSplited.count >= 4 else {
@@ -180,7 +180,7 @@ extension ChatController {
         let timestamp = Date(timeIntervalSince1970: timeInterval)
         let content = messageSplited[3]
         
-        let wsMessage = WSMessage(messageID: messageID, senderID: sendID, timestamp: timestamp, content: content)
+        let wsMessage = WSChatMessage(messageID: messageID, senderID: sendID, timestamp: timestamp, content: content)
         return wsMessage
     }
     

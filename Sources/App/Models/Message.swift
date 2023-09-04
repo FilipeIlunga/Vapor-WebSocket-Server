@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct WSMessage: Hashable {
+struct WSChatMessage: Hashable {
     let messageID: String
     let senderID: String
     let timestamp: Date

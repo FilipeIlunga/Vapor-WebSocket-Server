@@ -8,6 +8,6 @@
 import Foundation
 
 struct PendingMessage: Hashable {
-    var message: WSMessage
+    var message: WSChatMessage
     var userID: String
 }
