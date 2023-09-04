@@ -62,11 +62,31 @@ class ChatController {
         case .ContentData:
             print("binary")
         case .Reaction:
-            print("Reaction")
+            handleChatReactionMessafe(payload: payload)
         case .Reply:
             print("Reply")
         case .TypingStatus:
             handlerTypingStatus(payload: payload)
+        }
+    }
+    
+    private func handleChatReactionMessafe(payload: String) {
+        do {
+            var reactionMessage = try payload.decodeWSEncodable(type: ReactionMessage.self)
+            let wsMessageCodable = WSMessageHeader(messageType: .Chat, subMessageTypeCode: ChatMessageType.Reaction.code, payload: payload)
+
+            guard let wsMessage = try? wsMessageCodable.encode() else {
+                print("Error on encode WSMessage: \(wsMessageCodable)")
+                return
+            }
+            
+            for (user, ws) in connections {
+                guard user != reactionMessage.userID else { continue }
+                ws.send(wsMessage)
+            }
+            
+        } catch {
+            print("Error on decode reaction message")
         }
     }
     
