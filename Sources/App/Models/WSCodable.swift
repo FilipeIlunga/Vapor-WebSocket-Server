@@ -23,10 +23,12 @@ extension WSCodable {
         
         return wsEncode
     }
-    
-    func decode<T: WSCodable>(wsString: String,type: T.Type) throws -> T {
+}
+
+extension String {
+    func decodeWSEncodable<T>(type: T.Type) throws -> T where T: WSCodable {
         
-        guard let jsonData = wsString.data(using: .utf8) else {
+        guard let jsonData = self.data(using: .utf8) else {
             throw NSError(domain: "Error ao converter string para jason", code: 0)
         }
         
