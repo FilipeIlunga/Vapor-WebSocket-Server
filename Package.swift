@@ -23,7 +23,8 @@ let package = Package(
                 .product(name: "Vapor", package: "vapor")
             ]
         ),
-        .testTarget(name: "AppTests", dependencies: [
+        .testTarget(
+            name: "AppTests", dependencies: [
             .target(name: "App"),
             .product(name: "XCTVapor", package: "vapor"),
         ])

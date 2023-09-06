@@ -7,13 +7,6 @@
 
 import Foundation
 
-enum MessageType: Int {
-    case alive = 0
-    case chatMessage
-    case disconnecting
-    case typingStatus
-}
-
 enum ChatMessageType: Int, SubMessageType {
     
     case ContentString = 0
@@ -36,25 +29,15 @@ enum StatusMessageType: Int, SubMessageType {
     }
 }
 
-enum NewMessageType: Int, WSCodable {
+enum MessageType: Int, WSCodable {
     case Chat = 0
     case Status
 }
-
-//struct WSMessageHeader {
-//    let messageType: NewMessageType
-//    let subMessageType: SubMessageType
-//
-//    var wsEncode: String {
-//        return "\(messageType.rawValue)*|\(subMessageType.code)*|"
-//    }
-//}
 
 protocol MessageHeader {
     associatedtype MessageType
     var messageType: MessageType { get set}
     var subMessageTypeCode: Int { get set }
-    
 }
 
 protocol SubMessageType: WSCodable {
@@ -62,62 +45,11 @@ protocol SubMessageType: WSCodable {
 }
 
 struct WSMessageHeader: WSCodable, MessageHeader {
-    typealias MessageType = NewMessageType
+    typealias WSMessageType = MessageType
     
-    var messageType: MessageType
+    var messageType: WSMessageType
     var subMessageTypeCode: Int
     let payload: String
     
 }
 
-
-
-
-
-/*
-
- Mark: Exemplo de como decodar e decodar WSMessage
- 
- let wsMessage = WSChatMessage(
-     messageID: UUID().uuidString,
-     senderID: user.userName,
-     timestamp: timestamp,
-     content: messageContent,
-     isSendByUser: true)
- 
- 
- let socketMessage = getWSMessage(header: header, payload: wsMessage.description)
- 
- //Encode -> Objeto para string
- let wsTest = try! WSMessage(messageType: .Chat, subMessageType: ChatMessageType.ContentString.code, payload: try! wsMessage.encode()).encode()
-
- // Decode -> String para objeto
- let x = try! wsTest.decodeWSEncodable(type: WSMessage.self)
- 
- // Decode do payload
- switch x.messageType {
-     
- case .Chat:
-     guard let subMessage: ChatMessageType = ChatMessageType(rawValue: x.subMessageType) else {
-         return
-     }
-     
-     switch subMessage {
-     case .ContentString:
-         let y = try! x.payload.decodeWSEncodable(type: WSChatMessage.self)
-     case .ContentData:
-         print("")
-     case .Reaction:
-         print("")
-     case .Reply:
-         print("")
-     case .TypingStatus:
-         print("")
-     }
-     
- case .Status:
-     print("")
- }
-
- 
- */
