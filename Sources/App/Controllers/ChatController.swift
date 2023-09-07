@@ -9,12 +9,8 @@ import Vapor
 
 
 class ChatController {
-    // ...
-    
-    // Mantenha uma lista de mensagens pendentes
-    private var pendingMessages: Set<PendingMessage> = []
-    
-    private var connections: [String: WebSocket] = [:]
+    @Atomic private var pendingMessages: Set<PendingMessage> = []
+    @Atomic private var sessions: [UserSession] = []
     
     func handleWebSocket(_ app: Application) throws {
         app.webSocket("chatWS") { request, ws in
@@ -71,10 +67,7 @@ class ChatController {
                 return
             }
             
-            for (user, ws) in connections {
-                guard user != reactionMessage.userID else { continue }
-                ws.send(wsMessage)
-            }
+            sendMessage(fromUserID: reactionMessage.userID, message: wsMessage)
             
         } catch {
             print("Error on decode reaction message")
@@ -93,13 +86,34 @@ class ChatController {
                 return
             }
             
-            for (user, ws) in connections {
-                guard user != wsChatMessage.senderID else { continue }
-                ws.send(wsMessage)
-            }
+            
+            sendChatMessage(fromUserID:  wsChatMessage.senderID, message: wsMessageCodable)
             
         } catch {
             print("Error on decode data: \(payload)")
+        }
+    }
+    
+    private func sendChatMessage(fromUserID: String, message: WSMessageHeader) {
+        
+        guard let wsMessage = try?  WSCoder.shared.encode(data: message) else {
+            print("Error on encode WSMessage: \(message)")
+            return
+        }
+        
+        for session in sessions {
+            guard session.user.id != fromUserID else {
+                continue
+            }
+            
+            if !session.user.isConnected {
+                addPendingMessage(message, from: fromUserID, to: session.user.id)
+                print("Mensagem add e não enviada para \(session.user.id)")
+                continue
+            }
+                
+           sendMessage(fromUserID: fromUserID, message: wsMessage)
+            
         }
     }
     
@@ -114,51 +128,93 @@ class ChatController {
                 return
             }
             
-            for (user, ws) in connections {
-                guard user != typingMessage.userID else { continue }
-                ws.send(wsMessage)
-            }
+            sendMessage(fromUserID: typingMessage.userID, message: wsMessage)
             
         } catch {
             print("Error on \(#function): \(error.localizedDescription)")
         }
     }
     
-    
-
     private func handleStatusMessagReceivede(type: StatusMessageType, payload: String, ws: WebSocket) {
         do {
             let statusMessage: StatusMessage = try WSCoder.shared.decode(type: StatusMessage.self, from: payload)
-            print("WS received statusMessage: \(statusMessage)")
-            switch type {
-            case .Alive:
-                connections[statusMessage.userID] = ws
-            case .Disconnect:
-                connections[statusMessage.userID] = nil
+            let userID = statusMessage.userID
+            
+            if sessions.map {$0.user.id}.contains(userID) {
+             
+                guard let userSession = sessions.first(where: { $0.user.id == userID }),
+                      let index = sessions.firstIndex(of: userSession) else {
+                    print("Error on get user index ")
+                    return
+                }
+                
+                switch type {
+                case .Alive:
+                    sessions[index].user.isConnected = true
+                    sendPendingMessageIfNeeded(userID: userSession.user.id)
+                    print("User: \(userSession.user.id) is connected")
+
+                case .Disconnect:
+                    sessions[index].user.isConnected = false
+                    print("User: \(userSession.user.id) was disconnected")
+                }
+            } else {
+                createNewUser(userID: userID, ws: ws)
             }
         } catch {
-            
+            print("Error handling status message: \(error)")
         }
     }
+
     
     private func userHasPendingMessage(userID: String) -> Bool{
         return pendingMessages.map {$0.userID}.contains(userID)
     }
 
     
-    func sendMessage(fromUser: String, message: String) {
-        for (userID, ws) in connections {
-            guard userID != fromUser else {
+    func sendMessage(fromUserID: String, message: String) {
+        for session in sessions {
+            guard session.user.id != fromUserID, session.user.isConnected else {
+                print("Não madnou para: \(session.user.id)")
                 continue
             }
-            ws.send(message)
+            session.websocket.send(message)
         }
     }
     
-    
-    func addPendingMessage(_ message: WSChatMessage, to userID: String) {
-        let pendingMessage = PendingMessage(message: message, userID: userID)
+    func addPendingMessage(_ message: WSMessageHeader, from senderUserID: String,to userID: String) {
+        let pendingMessage = PendingMessage(message: message, userID: userID, fromUserID: senderUserID)
         pendingMessages.insert(pendingMessage)
+    }
+    
+    func sendPendingMessageIfNeeded(userID: String) {
+        
+        var tempPendingMessages = pendingMessages
+        var pendingMessageSent: Set<PendingMessage> = []
+        tempPendingMessages.forEach { pendingMessage in
+            if pendingMessage.userID == userID {
+                guard let wsMessage = try?  WSCoder.shared.encode(data: pendingMessage.message) else {
+                    print("Error on encode WSMessage: \(pendingMessage.message)")
+                    return
+                }
+                sendMessage(fromUserID: pendingMessage.fromUserID, message: wsMessage)
+                pendingMessageSent.insert(pendingMessage)
+            }
+        }
+        pendingMessages.subtract(pendingMessageSent)
+    }
+    
+    func createNewUser(userID: String, ws: WebSocket) {
+                
+        guard !sessions.map({ $0.user.id }).contains(userID) else {
+            print("User \(userID) exist")
+            return
+        }
+        
+        let newUser = User(id: userID, isConnected: true)
+        let newUserSession = UserSession(user: newUser, websocket: ws)
+        sessions.append(newUserSession)
+        print("User: \(newUser.id) was created")
     }
 }
 
