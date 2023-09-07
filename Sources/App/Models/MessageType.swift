@@ -44,7 +44,7 @@ protocol SubMessageType: WSCodable {
     var code: Int { get }
 }
 
-struct WSMessageHeader: WSCodable, MessageHeader {
+struct WSMessageHeader: WSCodable, MessageHeader, Hashable {
     typealias WSMessageType = MessageType
     
     var messageType: WSMessageType
