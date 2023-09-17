@@ -7,9 +7,16 @@
 
 import Foundation
 
+
+struct Reaction: Hashable, WSCodable {
+    var count: Int
+    var emoji: String
+}
+
+
 struct ReactionMessage: WSCodable {
     let userID: String
     let messageID: String
     let messageReacted: WSChatMessage
-    let reactionIcon: String
+    let reactionIcon: Reaction
 }

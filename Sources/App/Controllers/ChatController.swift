@@ -59,7 +59,8 @@ class ChatController {
     
     private func handleChatReactionMessafe(payload: String) {
         do {
-            var reactionMessage = try WSCoder.shared.decode(type: ReactionMessage.self, from: payload)
+            let reactionMessage = try WSCoder.shared.decode(type: ReactionMessage.self, from: payload)
+            
             let wsMessageCodable = WSMessageHeader(messageType: .Chat, subMessageTypeCode: ChatMessageType.Reaction.code, payload: payload)
 
             guard let wsMessage = try? WSCoder.shared.encode(data: wsMessageCodable) else {
@@ -140,7 +141,7 @@ class ChatController {
             let statusMessage: StatusMessage = try WSCoder.shared.decode(type: StatusMessage.self, from: payload)
             let userID = statusMessage.userID
             
-            if sessions.map {$0.user.id}.contains(userID) {
+            if sessions.map({$0.user.id}).contains(userID) {
              
                 guard let userSession = sessions.first(where: { $0.user.id == userID }),
                       let index = sessions.firstIndex(of: userSession) else {
@@ -151,6 +152,7 @@ class ChatController {
                 switch type {
                 case .Alive:
                     sessions[index].user.isConnected = true
+                    sessions[index].websocket = ws
                     sendPendingMessageIfNeeded(userID: userSession.user.id)
                     print("User: \(userSession.user.id) is connected")
 
@@ -175,7 +177,6 @@ class ChatController {
     func sendMessage(fromUserID: String, message: String) {
         for session in sessions {
             guard session.user.id != fromUserID, session.user.isConnected else {
-                print("Não madnou para: \(session.user.id)")
                 continue
             }
             session.websocket.send(message)
@@ -189,7 +190,8 @@ class ChatController {
     
     func sendPendingMessageIfNeeded(userID: String) {
         
-        var tempPendingMessages = pendingMessages
+        let tempPendingMessages = pendingMessages
+        
         var pendingMessageSent: Set<PendingMessage> = []
         tempPendingMessages.forEach { pendingMessage in
             if pendingMessage.userID == userID {

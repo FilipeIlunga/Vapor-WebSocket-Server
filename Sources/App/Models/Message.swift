@@ -13,7 +13,7 @@ struct WSChatMessage: Hashable, WSCodable {
     let timestamp: Date
     let content: String
     var isSendByUser: Bool
-    var reactions: [String]
+    var reactions: [Reaction]
 
 
     var description: String {

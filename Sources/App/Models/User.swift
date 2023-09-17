@@ -14,7 +14,7 @@ struct User: WSCodable, Hashable {
 
 struct UserSession: Hashable {
     var user: User
-    let websocket: WebSocket
+    var websocket: WebSocket
     
     static func == (lhs: UserSession, rhs: UserSession) -> Bool {
         return lhs.user.id == rhs.user.id
