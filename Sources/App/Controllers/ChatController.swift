@@ -119,7 +119,7 @@ class ChatController {
                 continue
             }
 
-           sendMessage(fromUserID: fromUserID, message: wsMessage)
+            session.websocket.send(wsMessage)
 
         }
     }

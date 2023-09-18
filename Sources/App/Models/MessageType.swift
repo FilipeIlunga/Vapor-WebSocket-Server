@@ -14,7 +14,8 @@ enum ChatMessageType: Int, SubMessageType {
     case Reaction
     case Reply
     case TypingStatus
-    
+    case DeleteMessage
+
     var code: Int {
         return self.rawValue
     }
