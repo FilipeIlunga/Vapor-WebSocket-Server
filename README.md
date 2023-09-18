@@ -28,7 +28,10 @@ The chat system provides real-time typing indicators. When a user starts typing 
 
 Users can react to messages, and the client informs the server about these reactions. The server then updates the message with the new reaction and informs all other clients about the updated message. Each client updates its UI to display the new reaction.
 
-## 1 - Vapor Installation
+# How to run the server on your machine.
+
+## 1  - Vapor Installation
+To run the server on your machine, you need to install Vapor first.
 
 To set up Vapor on your computer, you can use Homebrew. If Homebrew is not already installed, you can visit the [official website](https://brew.sh/) to install it. Once Homebrew is ready, open a terminal and run the following command:
 
@@ -56,9 +59,10 @@ If Vapor is correctly installed, you should see the following result:
 
 <img src="https://github.com/FilipeIlunga/Vapor-WebSocket-Server/assets/45888235/d053f99d-9849-40ca-ade4-cce176e32038" alt="image" width="600">
 
+
 With Vapor installed, you are now ready to build and use this project.
 
-## Clone This Repository
+## 2 - Clone This Repository
 
 To clone this repository, run the following command:
 
@@ -66,13 +70,17 @@ To clone this repository, run the following command:
 git clone git@github.com:FilipeIlunga/Vapor-WebSocket-Server.git
 ```
 
-## Open the Project with Xcode
+## 3 - Open the Project with Xcode
 
-To open this project in Xcode, navigate to the folder where you cloned the repository and double-click on `Package.swift`. This action will open Xcode and initiate the download of all required dependencies. Once all dependencies are installed, you can build and run the Xcode project just like any other Xcode project. You will see the following message in your Xcode console:
+To open this project in Xcode, navigate to the folder where you cloned the repository and double-click on `Package.swift`. This action will open Xcode and initiate the download of all required dependencies. 
+
+## 4 - Build and run the project
+
+Once all dependencies are installed, you can build and run the Xcode project just like any other Xcode project. You will see the following message in your Xcode console:
 
 <img src="https://github.com/FilipeIlunga/Vapor-WebSocket-Server/assets/45888235/a9109826-63a8-42f0-9a30-b67fb88ecff7" alt="image" width="400">
 
-## Wait for new client connections.
+## 5 - Wait for new client connections.
 With the server running, you can connect to the client in [this repository](https://github.com/FilipeIlunga/Vapor-WebSocket-Client).and start chat communication.
 
 ## EXTRA: Make server accesible from the internet
@@ -98,7 +106,7 @@ enum APIKeys: String {
 
 ```swift
 enum APIKeys: String {
-    case websocketAddress = "http://127.0.0.1:8080](https://ecd0-138-122-73-139.ngrok.io)https://ecd0-138-122-73-139.ngrok.io"
+    case websocketAddress = "https://ecd0-138-122-73-139.ngrok.io)https://ecd0-138-122-73-139.ngrok.io"
 }
 ```
 > [!NOTE]
