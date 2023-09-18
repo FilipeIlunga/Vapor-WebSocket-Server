@@ -7,11 +7,12 @@
 
 import Foundation
 
-struct PendingMessage: Hashable {
+struct PendingMessage: Hashable, Equatable {
     
     var message: WSMessageHeader
     var userID: String
     var fromUserID: String
+    var timeStamp: Date
     
     static func == (lhs: PendingMessage, rhs: PendingMessage) -> Bool {
         return lhs.message.payload == rhs.message.payload && lhs.userID == rhs.userID

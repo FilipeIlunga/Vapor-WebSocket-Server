@@ -25,11 +25,13 @@ class ChatController {
             let wsMessage: WSMessageHeader = try WSCoder.shared.decode(type: WSMessageHeader.self, from: message)
             switch wsMessage.messageType {
             case .Chat:
+                
                 guard let chatMessageType: ChatMessageType = ChatMessageType(rawValue: wsMessage.subMessageTypeCode) else {
                     print("Invalid chatMessageType code: \(wsMessage.subMessageTypeCode)")
                     return
                 }
-                handleChatMessageReceived(type: chatMessageType, payload: wsMessage.payload)
+                
+                handleChatMessageReceived(type: chatMessageType, message: wsMessage)
             case .Status:
                 guard let statusMessageType: StatusMessageType = StatusMessageType(rawValue: wsMessage.subMessageTypeCode) else {
                     print("Invalid statusMessageType code: \(wsMessage.subMessageTypeCode)")
@@ -42,99 +44,103 @@ class ChatController {
         }
     }
     
-    private func handleChatMessageReceived(type: ChatMessageType, payload: String) {
-        switch type {
-        case .ContentString:
-            handleChatContentString(payload: payload)
-        case .ContentData:
-            print("binary")
-        case .Reaction:
-            handleChatReactionMessafe(payload: payload)
-        case .Reply:
-            print("Reply")
-        case .TypingStatus:
-            handlerTypingStatus(payload: payload)
+    private func handleChatMessageReceived(type: ChatMessageType, message: WSMessageHeader) {
+        do {
+            let messageEncode = try WSCoder.shared.encode(data: message)
+            
+            switch type {
+            case .ContentString:
+                sendChatMessage(fromUserID: message.fromUserID, message: message)
+            case .ContentData:
+                print("Implemnt when client suport binary message")
+            case .Reaction:
+                sendChatMessage(fromUserID: message.fromUserID, message: message)
+            default:
+                sendMessage(fromUserID: message.fromUserID, message: messageEncode)
+            }
+        } catch {
+            print("Error on \(#function): \(error.localizedDescription)")
         }
     }
     
-    private func handleChatReactionMessafe(payload: String) {
-        do {
-            let reactionMessage = try WSCoder.shared.decode(type: ReactionMessage.self, from: payload)
-            
-            let wsMessageCodable = WSMessageHeader(messageType: .Chat, subMessageTypeCode: ChatMessageType.Reaction.code, payload: payload)
-
-            guard let wsMessage = try? WSCoder.shared.encode(data: wsMessageCodable) else {
-                print("Error on encode WSMessage: \(wsMessageCodable)")
-                return
-            }
-            
-            sendMessage(fromUserID: reactionMessage.userID, message: wsMessage)
-            
-        } catch {
-            print("Error on decode reaction message")
-        }
-    }
+//    private func handleChatReactionMessafe(payload: String) {
+//        do {
+//            let reactionMessage = try WSCoder.shared.decode(type: ReactionMessage.self, from: payload)
+//
+//            let wsMessageCodable = WSMessageHeader(messageType: .Chat, subMessageTypeCode: ChatMessageType.Reaction.code, payload: payload)
+//
+//            guard let wsMessage = try? WSCoder.shared.encode(data: wsMessageCodable) else {
+//                print("Error on encode WSMessage: \(wsMessageCodable)")
+//                return
+//            }
+//
+//            sendMessage(fromUserID: reactionMessage.userID, message: wsMessage)
+//
+//        } catch {
+//            print("Error on decode reaction message")
+//        }
+//    }
     
-    private func handleChatContentString(payload: String) {
-        do {
-            var wsChatMessage = try  WSCoder.shared.decode(type: WSChatMessage.self, from: payload)
-            wsChatMessage.isSendByUser = false
-            
-            let wsMessageCodable = WSMessageHeader(messageType: .Chat, subMessageTypeCode: ChatMessageType.ContentString.code, payload: payload)
-
-            guard let wsMessage = try?  WSCoder.shared.encode(data: wsMessageCodable) else {
-                print("Error on encode WSMessage: \(wsMessageCodable)")
-                return
-            }
-            
-            
-            sendChatMessage(fromUserID:  wsChatMessage.senderID, message: wsMessageCodable)
-            
-        } catch {
-            print("Error on decode data: \(payload)")
-        }
-    }
+//    private func handleChatContentString(payload: String) {
+//        do {
+//            var wsChatMessage = try  WSCoder.shared.decode(type: WSChatMessage.self, from: payload)
+//            wsChatMessage.isSendByUser = false
+//
+//            let wsMessageCodable = WSMessageHeader(messageType: .Chat, subMessageTypeCode: ChatMessageType.ContentString.code, payload: payload)
+//
+//            guard let wsMessage = try?  WSCoder.shared.encode(data: wsMessageCodable) else {
+//                print("Error on encode WSMessage: \(wsMessageCodable)")
+//                return
+//            }
+//
+//
+//            sendChatMessage(fromUserID:  wsChatMessage.senderID, message: wsMessageCodable)
+//
+//        } catch {
+//            print("Error on decode data: \(payload)")
+//        }
+//    }
     
     private func sendChatMessage(fromUserID: String, message: WSMessageHeader) {
-        
+
         guard let wsMessage = try?  WSCoder.shared.encode(data: message) else {
             print("Error on encode WSMessage: \(message)")
             return
         }
-        
+
         for session in sessions {
             guard session.user.id != fromUserID else {
                 continue
             }
-            
+
             if !session.user.isConnected {
                 addPendingMessage(message, from: fromUserID, to: session.user.id)
                 print("Mensagem add e não enviada para \(session.user.id)")
                 continue
             }
-                
+
            sendMessage(fromUserID: fromUserID, message: wsMessage)
-            
+
         }
     }
     
-    private func handlerTypingStatus(payload: String) {
-        
-        do {
-            let typingMessage: TypingMessage = try WSCoder.shared.decode(type: TypingMessage.self, from: payload)
-            let wsMessageCodable = WSMessageHeader(messageType: .Chat, subMessageTypeCode: ChatMessageType.TypingStatus.code, payload: payload)
-            
-            guard let wsMessage = try?  WSCoder.shared.encode(data: wsMessageCodable) else {
-                print("Error on encode WSMessage: \(wsMessageCodable)")
-                return
-            }
-            
-            sendMessage(fromUserID: typingMessage.userID, message: wsMessage)
-            
-        } catch {
-            print("Error on \(#function): \(error.localizedDescription)")
-        }
-    }
+//    private func handlerTypingStatus(payload: String) {
+//
+//        do {
+//            let typingMessage: TypingMessage = try WSCoder.shared.decode(type: TypingMessage.self, from: payload)
+//            let wsMessageCodable = WSMessageHeader(messageType: .Chat, subMessageTypeCode: ChatMessageType.TypingStatus.code, payload: payload)
+//
+//            guard let wsMessage = try?  WSCoder.shared.encode(data: wsMessageCodable) else {
+//                print("Error on encode WSMessage: \(wsMessageCodable)")
+//                return
+//            }
+//
+//            sendMessage(fromUserID: typingMessage.userID, message: wsMessage)
+//
+//        } catch {
+//            print("Error on \(#function): \(error.localizedDescription)")
+//        }
+//    }
     
     private func handleStatusMessagReceivede(type: StatusMessageType, payload: String, ws: WebSocket) {
         do {
@@ -184,13 +190,15 @@ class ChatController {
     }
     
     func addPendingMessage(_ message: WSMessageHeader, from senderUserID: String,to userID: String) {
-        let pendingMessage = PendingMessage(message: message, userID: userID, fromUserID: senderUserID)
+        let pendingMessage = PendingMessage(message: message, userID: userID, fromUserID: senderUserID, timeStamp: Date.now)
         pendingMessages.insert(pendingMessage)
     }
     
     func sendPendingMessageIfNeeded(userID: String) {
         
-        let tempPendingMessages = pendingMessages
+        let tempPendingMessages = pendingMessages.sorted { message1, message2 in
+            message1.timeStamp < message2.timeStamp
+        }
         
         var pendingMessageSent: Set<PendingMessage> = []
         tempPendingMessages.forEach { pendingMessage in

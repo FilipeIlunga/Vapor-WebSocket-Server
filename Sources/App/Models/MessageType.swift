@@ -36,6 +36,7 @@ enum MessageType: Int, WSCodable {
 
 protocol MessageHeader {
     associatedtype MessageType
+    var fromUserID: String { get set }
     var messageType: MessageType { get set}
     var subMessageTypeCode: Int { get set }
 }
@@ -47,6 +48,7 @@ protocol SubMessageType: WSCodable {
 struct WSMessageHeader: WSCodable, MessageHeader, Hashable {
     typealias WSMessageType = MessageType
     
+    var fromUserID: String
     var messageType: WSMessageType
     var subMessageTypeCode: Int
     let payload: String
