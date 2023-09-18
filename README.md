@@ -2,7 +2,9 @@
 
 ## Server-side description of the chat system:
 
-This Vapor server is used to create a real-time chat application. It uses WebSockets to allow users to exchange messages in an instant and bidirectional way. The client's codebase can be found in this repository: [Client repository](https://github.com/FilipeIlunga/Vapor-WebSocket-Client).
+This Vapor server is used to create a real-time chat application. It uses WebSockets to allow users to exchange messages in an instant and bidirectional way. 
+
+The client's codebase can be found in this repository: [Client repository](https://github.com/FilipeIlunga/Vapor-WebSocket-Client).
 
 # Key Features:
 
