@@ -63,44 +63,6 @@ class ChatController {
         }
     }
     
-//    private func handleChatReactionMessafe(payload: String) {
-//        do {
-//            let reactionMessage = try WSCoder.shared.decode(type: ReactionMessage.self, from: payload)
-//
-//            let wsMessageCodable = WSMessageHeader(messageType: .Chat, subMessageTypeCode: ChatMessageType.Reaction.code, payload: payload)
-//
-//            guard let wsMessage = try? WSCoder.shared.encode(data: wsMessageCodable) else {
-//                print("Error on encode WSMessage: \(wsMessageCodable)")
-//                return
-//            }
-//
-//            sendMessage(fromUserID: reactionMessage.userID, message: wsMessage)
-//
-//        } catch {
-//            print("Error on decode reaction message")
-//        }
-//    }
-    
-//    private func handleChatContentString(payload: String) {
-//        do {
-//            var wsChatMessage = try  WSCoder.shared.decode(type: WSChatMessage.self, from: payload)
-//            wsChatMessage.isSendByUser = false
-//
-//            let wsMessageCodable = WSMessageHeader(messageType: .Chat, subMessageTypeCode: ChatMessageType.ContentString.code, payload: payload)
-//
-//            guard let wsMessage = try?  WSCoder.shared.encode(data: wsMessageCodable) else {
-//                print("Error on encode WSMessage: \(wsMessageCodable)")
-//                return
-//            }
-//
-//
-//            sendChatMessage(fromUserID:  wsChatMessage.senderID, message: wsMessageCodable)
-//
-//        } catch {
-//            print("Error on decode data: \(payload)")
-//        }
-//    }
-    
     private func sendChatMessage(fromUserID: String, message: WSMessageHeader) {
 
         guard let wsMessage = try?  WSCoder.shared.encode(data: message) else {
@@ -124,23 +86,6 @@ class ChatController {
         }
     }
     
-//    private func handlerTypingStatus(payload: String) {
-//
-//        do {
-//            let typingMessage: TypingMessage = try WSCoder.shared.decode(type: TypingMessage.self, from: payload)
-//            let wsMessageCodable = WSMessageHeader(messageType: .Chat, subMessageTypeCode: ChatMessageType.TypingStatus.code, payload: payload)
-//
-//            guard let wsMessage = try?  WSCoder.shared.encode(data: wsMessageCodable) else {
-//                print("Error on encode WSMessage: \(wsMessageCodable)")
-//                return
-//            }
-//
-//            sendMessage(fromUserID: typingMessage.userID, message: wsMessage)
-//
-//        } catch {
-//            print("Error on \(#function): \(error.localizedDescription)")
-//        }
-//    }
     
     private func handleStatusMessagReceivede(type: StatusMessageType, payload: String, ws: WebSocket) {
         do {
