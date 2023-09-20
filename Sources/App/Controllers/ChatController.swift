@@ -16,6 +16,28 @@ class ChatController {
         app.webSocket("chatWS") { request, ws in
             ws.onText { ws, text in
                 self.handlerWebsocketMessage(message: text, ws: ws)
+                
+            }
+            
+            ws.onBinary { ws, buffer in
+                if let data = buffer.getData(at: 0, length: buffer.readableBytes) {
+                    do {
+                        let byteArray = [UInt8](data)
+                        
+                        let message = try BinaryDecoder.decode(Packet.self, data: byteArray)
+                        print("\(message)")
+                        let messageEncoded = try BinaryEncoder.encode(message)
+                        
+                        for session in self.sessions {
+                                guard session.user.id != message.userID else {
+                                    continue
+                                }
+                                session.websocket.send(messageEncoded)
+                            }
+                    } catch {
+                        print("Error: \(error.localizedDescription)")
+                    }
+                }
             }
         }
     }

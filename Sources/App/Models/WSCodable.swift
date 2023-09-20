@@ -8,9 +8,7 @@
 import Foundation
 
 
-
-protocol WSCodable: Codable {}
-
+typealias WSCodable = Codable & BinaryCodable
 
 final class WSCoder {
     private init() {}

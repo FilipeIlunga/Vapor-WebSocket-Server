@@ -9,6 +9,7 @@ import Foundation
 
 struct WSChatMessage: Hashable, WSCodable {
     let messageID: String
+    let imageDate: Data?
     let senderID: String
     let timestamp: Date
     let content: String
